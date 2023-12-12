@@ -12,8 +12,8 @@ interface TvApi {
     suspend fun getTrendingTvShows(): Response<ApiResponse>
 
     @GET("search/tv")
-    suspend fun searchTvShow(@Query("query") query:String): Response<ApiResponse>
+    suspend fun searchTvShow(@Query("query") query: String): Response<ApiResponse>
 
-    @GET("tv/{series_id}/similar")
-    suspend fun getTvShow(@Path("series_id") seriesId:String): Response<TvShow>
+    @GET("tv/{series_id}")
+    suspend fun getTvShow(@Path("series_id") seriesId: String): Response<TvShow>
 }
