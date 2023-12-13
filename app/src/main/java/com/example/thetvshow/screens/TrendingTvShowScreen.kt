@@ -19,8 +19,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -36,7 +39,9 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.example.thetvshow.DataState
 import com.example.thetvshow.R
+import com.example.thetvshow.models.ApiResponse
 import com.example.thetvshow.models.TvShow
 import com.example.thetvshow.viewmodel.TrendingTvShowViewModel
 
@@ -45,11 +50,28 @@ import com.example.thetvshow.viewmodel.TrendingTvShowViewModel
 @Composable
 fun TrendingTvShowScreen(onClick: (category: String) -> Unit) {
     val trendingTvShowViewModel: TrendingTvShowViewModel = hiltViewModel()
-    val trendingShow: State<List<TvShow>> = trendingTvShowViewModel.tvShowList.collectAsState()
     val searchTvText: State<String> = trendingTvShowViewModel.searchTvString.collectAsState()
     val isSearching: State<Boolean> = trendingTvShowViewModel.isSearching.collectAsState()
+    val trendingShows = remember { mutableStateOf(arrayListOf<TvShow>()) }
+    val trendingSearchShow = remember { mutableStateOf(arrayListOf<TvShow>()) }
 
-    if (trendingShow.value.isEmpty()) {
+    LaunchedEffect(key1 = 0) {
+        trendingTvShowViewModel.getTvShows()
+    }
+
+
+    if (trendingTvShowViewModel.tvShowList.value is DataState.Success<ApiResponse>) {
+        trendingShows.value =
+            (trendingTvShowViewModel.tvShowList.value as DataState.Success<ApiResponse>).data.results as ArrayList
+    }
+
+    if (trendingTvShowViewModel.tvSearchShowList.value is DataState.Success<ApiResponse>) {
+        trendingSearchShow.value =
+            (trendingTvShowViewModel.tvSearchShowList.value as DataState.Success<ApiResponse>).data.results as ArrayList
+    }
+
+
+    if (trendingShows.value.isEmpty()) {
         Box(
             modifier = Modifier.fillMaxSize(1f),
             contentAlignment = Alignment.Center
@@ -61,7 +83,9 @@ fun TrendingTvShowScreen(onClick: (category: String) -> Unit) {
             TextField(
                 value = searchTvText.value,
                 onValueChange = trendingTvShowViewModel::onSearchTextChanged,
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 8.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp, vertical = 8.dp),
                 placeholder = {
                     Text(
                         text = "Search tv shows"
@@ -72,7 +96,7 @@ fun TrendingTvShowScreen(onClick: (category: String) -> Unit) {
                 contentPadding = PaddingValues(8.dp),
                 verticalArrangement = Arrangement.SpaceAround,
             ) {
-                items(trendingShow.value.distinct()) {
+                items(trendingShows.value.distinct()) {
                     TrendingTvShowItem(trendingShow = it, onClick)
                 }
             }

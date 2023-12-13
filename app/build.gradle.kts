@@ -93,4 +93,7 @@ dependencies {
     //Image
     implementation("io.coil-kt:coil-compose:2.0.0-rc01")
 
+    // timber log
+    implementation("com.jakewharton.timber:timber:5.0.1")
+
 }

@@ -1,9 +1,13 @@
 package com.example.thetvshow.repository
 
+import com.example.thetvshow.DataState
 import com.example.thetvshow.api.TvApi
+import com.example.thetvshow.models.ApiResponse
 import com.example.thetvshow.models.TvShow
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
 class TrendingTvRepository @Inject constructor( private val tvApi: TvApi){
@@ -22,17 +26,28 @@ class TrendingTvRepository @Inject constructor( private val tvApi: TvApi){
         get() = _tvShowDetails
 
 
-    suspend fun getTrendingTvList(){
+    suspend fun getTrendingTvList() : Flow<DataState<ApiResponse>> = flow  {
+        emit(DataState.Loading)
         val response=  tvApi.getTrendingTvShows()
-        if (response.isSuccessful && response.body() !=null){
-                response?.body()?.results?.let { _trendingTv.emit(it) }
+        try {
+            if (response.isSuccessful && response.body() !=null){
+                emit(DataState.Success(response.body()!!))
+            }
+        }catch (e: Exception){
+            emit(DataState.Error(e))
         }
+
     }
 
-    suspend fun getTrendingTvSearchList(query: String){
+    suspend fun getTrendingTvSearchList(query: String): Flow<DataState<ApiResponse>>  = flow {
+        emit(DataState.Loading)
         val response=  tvApi.searchTvShow(query)
-        if (response.isSuccessful && response.body() !=null){
-                response?.body()?.results?.let { _trendingTv.emit(it) }
+        try {
+            if (response.isSuccessful && response.body() !=null){
+                emit(DataState.Success(response.body()!!))
+            }
+        }catch (e: Exception){
+            emit(DataState.Error(e))
         }
     }
 
